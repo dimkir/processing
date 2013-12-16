@@ -24,6 +24,7 @@
 package processing.app.tools;
 
 import processing.app.*;
+import processing.app.elements.sketch.Sketch;
 import processing.core.PApplet;
 
 import java.io.*;

@@ -21,23 +21,56 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package processing.app;
+package processing.app.elements.sketch;
 
-import processing.core.*;
+import java.awt.FileDialog;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 
-import java.awt.*;
-import java.io.*;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
-import javax.swing.*;
+import processing.app.Base;
+import processing.app.Editor;
+import processing.app.Mode;
+import processing.app.Preferences;
+import processing.core.PApplet;
+
+
 
 
 /**
  * Stores information about files in the current sketch.
+ * 
+ * <p>
+ * I wonder how exactly this works? The easiest way to figure it out, is probably
+ * to try to reuse this sketch.
+ * 
+ * 
+ * What are the bounds of this abstraction? Is there clear line between
+ * which states belong to sketch and which states belong to Editor? It seems to me
+ * that Editor/Sketch are too tightly coupled and some more of "loose coupling" may
+ * be introduced.
+ * </p>
+ * 
  */
 public class Sketch {
+  
+  /**
+   * Why should Sketch hold the reference to Editor? 
+   * Sketch should only care about it's own status and 
+   * should be NOT coupled to the editor.
+   */
   private Editor editor;
+  
+  /**
+   * How is mode reference used here?
+   * Can we extract some?
+   */
   private Mode mode;
 
+  
   /** main pde file for this sketch. */
   private File primaryFile;
 
@@ -59,7 +92,14 @@ public class Sketch {
   /** code folder location for this sketch (may not exist yet) */
   private File codeFolder;
 
+  /**
+   * ?
+   */
   private SketchCode current;
+  
+  /**
+   * ?
+   */
   private int currentIndex;
   /**
    * Number of sketchCode objects (tabs) in the current sketch. Note that this
@@ -101,6 +141,13 @@ public class Sketch {
    * Used by the command-line version to create a sketch object.
    * @param path location of the main .pde file
    * @param mode what flavor of sketch we're dealing with.
+   * <p>
+   * ZZZ Is it failable? What happens when there's an error?
+   * 
+   * It should be failable in case path is pointing to the non-exisitng 
+   * directory?
+   * Or it will just create by default empty one?
+   * </p>
    */
   public Sketch(String path, Mode mode) {
     this.editor = null;
@@ -120,6 +167,14 @@ public class Sketch {
   }
 
 
+  /**
+   * Attempts to load a sketch Loads file.
+   * What's the successful factor.
+   * 
+   * @throws SketchRtException when something went wrong. 
+   * 
+   * @param path
+   */
   protected void load(String path) {
     primaryFile = new File(path);
     // get the name of the sketch by chopping .pde or .java
@@ -214,6 +269,9 @@ public class Sketch {
   /**
    * Reload the current sketch. Used to update the text area when
    * an external editor is in use.
+   * 
+   * ZZZ in case I have called this reload method, how is the Editor is supposed
+   *    to get notified about the event?
    */
   public void reload() {
     // set current to null so that the tab gets updated
@@ -224,6 +282,23 @@ public class Sketch {
   }
 
 
+  /**
+   * Replace what with what?
+   * 
+   * <p>
+   * It is not really failable, but if there's no match,
+   * then it will silently not-replace anything.
+   * </p>
+   * 
+   * @param newCode an initialized {@link SketchCode} object
+   *        whose {@link SketchCode#getFileName()} method will be 
+   *        used to find amongst current sketches sketchcode with same filename.
+   * <p>
+   * Taking into account that 
+   * </p>
+   * 
+   * @param newCode
+   */
   protected void replaceCode(SketchCode newCode) {
     for (int i = 0; i < codeCount; i++) {
       if (code[i].getFileName().equals(newCode.getFileName())) {
@@ -234,6 +309,17 @@ public class Sketch {
   }
 
 
+  /**
+   * Inserts initializes sketch code object into 
+   * the sketch.
+   * 
+   * <p>
+   * What happens if we're inserting SC with the same {@link SketchCode#getFileName()} name
+   * as already in the thing.
+   * </p>
+   * 
+   * @param newCode
+   */
   protected void insertCode(SketchCode newCode) {
     // make sure the user didn't hide the sketch folder
     ensureExistence();
@@ -270,6 +356,8 @@ public class Sketch {
 
   /**
    * Handler for the New Code menu option.
+   * 
+   * ZZZ what does it mean "handle new code"? Add new tab?
    */
   public void handleNewCode() {
     // make sure the user didn't hide the sketch folder
@@ -286,12 +374,38 @@ public class Sketch {
     }
 
     renamingCode = false;
+    
+    // TODO: WTF?? Why are we directly calling to the EDITOR??
     editor.status.edit("Name for new file:", "");
   }
 
 
   /**
    * Handler for the Rename Code menu option.
+   *
+   * Isn't it better to actually try to introduce preconditions
+   * (renamed non empty etc) and in case they're not met, simply throw an exception
+   * 
+   * Attempts to rename (smth) and aborts if sketch isn't saved.
+   * 
+   * So WHAT is it going to rename? A sketch, a tab, a current tab? a random tab?
+   * 
+   * Condition to rename means that sketch cannot be untitled and should be saved.
+   * 
+   * Basically it doesn't even rename, it simply checks for valid
+   * renaming conditions and after that just asks StatusLine to request
+   * name and assumes that status line will call upon completion the necessary
+   * renaming method.
+   * 
+   * <ul>
+   * <li>Makes sure sketch folder exists
+   * <li>Verifies sketch isn't untitled.
+   * <li>Verifies sketch
+   * </ul>
+   * 
+   * Can we elaborate on this one? 
+   * How does it know which element to rename?
+   * 
    */
   public void handleRenameCode() {
     // make sure the user didn't hide the sketch folder
@@ -326,16 +440,22 @@ public class Sketch {
       "New name for sketch:" : "New name for file:";
     String oldName = (current.isExtension("pde")) ?
       current.getPrettyName() : current.getFileName();
+      // TODO: WTF again this crappy coupling.
     editor.status.edit(prompt, oldName);
   }
 
 
   /**
+   * This is a very fancy method, which is called when?
+   * 
+   * 
    * This is called upon return from entering a new file name.
    * (that is, from either newCode or renameCode after the prompt)
    * This code is almost identical for both the newCode and renameCode
    * cases, so they're kept merged except for right in the middle
    * where they diverge.
+   * 
+   * @param newName is the name for ?
    */
   protected void nameCode(String newName) {
     // make sure the user didn't hide the sketch folder
@@ -515,7 +635,10 @@ public class Sketch {
     setCurrentCode(newName);
 
     // update the tabs
-    editor.header.rebuild();
+    editor.header.rebuild();  // this shouldn't be happening from inside the sketch
+                              // the Editor should be notified of important sketch events (namely marked with call to editor in our example)
+                              // and when this event occurs, the Editor should decide himself which parts 
+                              // of itself it needs to update. Maybe not only header.
   }
 
 
@@ -666,6 +789,11 @@ public class Sketch {
 
 
   /**
+   * This forces sketch to fetch text from editor and 
+   * put it to sketch.
+   * 
+   * I wonder who's caller of this method?
+   * 
    * Save all code in the current sketch. This just forces the files to save
    * in place, so if it's an untitled (un-saved) sketch, saveAs() should be
    * called instead. (This is handled inside Editor.handleSave()).
@@ -959,6 +1087,7 @@ public class Sketch {
 
   /**
    * Add a file to the sketch.
+   * 
    * <p/>
    * .pde or .java files will be added to the sketch folder. <br/>
    * .jar, .class, .dll, .jnilib, and .so files will all
@@ -968,6 +1097,11 @@ public class Sketch {
    * If they don't exist already, the "code" or "data" folder
    * will be created.
    * <p/>
+   * 
+   * @param sourceFile does this file has to be an existing file?
+   *                  and it doesn't really have to be a source file.
+   * 
+   * @throws What is the error handling policy?
    * @return true if successful.
    */
   public boolean addFile(File sourceFile) {
@@ -1006,6 +1140,8 @@ public class Sketch {
     if (destFile.exists()) {
       Object[] options = { "OK", "Cancel" };
       String prompt = "Replace the existing version of " + filename + "?";
+      
+      // TODO: it asssumes that we're running Swing application.
       int result = JOptionPane.showOptionDialog(editor,
                                                 prompt,
                                                 "Replace",
@@ -1122,8 +1258,12 @@ public class Sketch {
 
 
   /**
+   * Sets current code to supplied filename.
+   * 
    * Internal helper function to set the current tab based on a name.
-   * @param findName the file name (not pretty name) to be shown
+   * 
+   * @param findName the file name (OR pretty name) to be shown (should be VALID, existing)
+   * @throws SketchRtException when cannot find the element.
    */
   protected void setCurrentCode(String findName) {
     for (int i = 0; i < codeCount; i++) {
@@ -1133,6 +1273,7 @@ public class Sketch {
         return;
       }
     }
+    throw new SketchRtException("Cannot find file: " + findName);
   }
 
 
@@ -1203,6 +1344,10 @@ public class Sketch {
    * nefarious user. If they did, try to re-create it and save.
    * Only checks to see if the main folder is still around,
    * but not its contents.
+   * 
+   * <p>
+   * What's the error-handling policy here? Catch-all?
+   * </p>
    */
   public void ensureExistence() {
     if (!folder.exists()) {
@@ -1385,6 +1530,16 @@ public class Sketch {
   }
 
 
+  /**
+   * Returns "current" sketch code.
+   * <p>
+   * It is very annoying that this object actually has this state of "current code".
+   * I don't really like it. I believe that this state should be the state of the editor or some
+   * entity which will be performing responsibility of "controller" for the Editor and other shit.
+   * This state should only be in once place.
+   * </p>
+   * @return
+   */
   public SketchCode getCurrentCode() {
     return current;
   }
@@ -1517,4 +1672,24 @@ public class Sketch {
   public Mode getMode() {
     return mode;
   }
+  
+  /**
+   * This is listener for all the sketch events.
+   * 
+   */
+  private ISketchEvents mSketchEventsListener;
+  
+  protected boolean isListenerMissing(){
+    return mSketchEventsListener == null;
+  }
+  
+  public void setOnSketchEventListener(ISketchEvents events){
+      mSketchEventsListener = events;
+  }
+  
+  protected void fireOnFileAddedEvent(SketchCode sc){
+      if ( isListenerMissing() ){ return; }
+      mSketchEventsListener.onFileAdded(sc, this);
+  }
+  
 }

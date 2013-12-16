@@ -8,7 +8,7 @@ import java.io.StringWriter;
 import antlr.ANTLRException;
 import processing.app.Base;
 import processing.app.Preferences;
-import processing.app.SketchException;
+import processing.app.elements.sketch.SketchException;
 import processing.mode.java.preproc.PdePreprocessor;
 import processing.mode.java.AutoFormat;
 

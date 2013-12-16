@@ -22,16 +22,53 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package processing.app;
+package processing.app.elements.sketch;
 
-import java.io.*;
 
+// also coupled to Base
+
+
+
+import java.io.File;
+import java.io.IOException;
+
+
+// why do we have this shit here?
 import javax.swing.text.Document;
-import javax.swing.undo.*;
+import javax.swing.undo.UndoManager;
+
+import processing.app.Base;
+import processing.app.elements.statusline.EditorStatus;
 
 
 /**
  * Represents a single tab of a sketch.
+ * 
+ * Backed by:
+ * -file on the filesystem
+ * -?Swing.text.Document
+ * -String in memory containing the program
+ * Which creates reasonable question:
+ *  HOW DO WE KEEP THEM SYNCHED?
+ * 
+ * <p>
+ * That's a very confusing abstraction: if it is "tab" in the editor, then it shoudl 
+ * be coupled to editor. If it is "file of a sketch" it should be independent from the 
+ * editor. 
+ * In that way, both of the abstractions will follow SRP and have high level of cohesion
+ * inside of them.
+ * If we leave it now, it's more likely EditorTabWSketch as opposed to "sketch code".
+ * </p>
+ * 
+ * <p>
+ * I want some "self-sufficient" classes, which do not dependent on external states 
+ * (or at least dependency on external states is reduced and localized).
+ * 
+ * Also I do not see any "general" error handling policy here.  Are we throwing 
+ * checked exceptions? Are we throwing unchecked exceptions?
+ * 
+ * </p>
+ * 
  */
 public class SketchCode {
   /** Pretty name (no extension), not the full file name */
@@ -53,6 +90,7 @@ public class SketchCode {
   private Document document;
 
   /** Last time this tab was visited */
+  // TODO: FFS! This is even a package variable
   long visited;
 
   /**
@@ -66,10 +104,13 @@ public class SketchCode {
 //  private UndoableEdit lastEdit;
 
   // saved positions from last time this tab was used
+  // but it's funny that this is the state which belongs to EDITOR, not 
+  // the sketch? 
   private int selectionStart;
   private int selectionStop;
   private int scrollPosition;
 
+  /** This variable is  pure 'property' variable. But the getter is pretty popular */
   private boolean modified;
 
   /** name of .java file after preproc */
@@ -78,6 +119,17 @@ public class SketchCode {
   private int preprocOffset;
 
 
+  /**
+   * What is the "creation" policy of this object? 
+   * Should it be path to existing file? Will it fail if the file doesn't exist? Or will
+   * it create the file if it doesn't exist?
+   * 
+   * @throws Unfortunately this method swallows IOException. Will this sketch code 
+   *          class become then invalid? Or it will be valid?
+   * 
+   * @param file
+   * @param extension
+   */
   public SketchCode(File file, String extension) {
     this.file = file;
     this.extension = extension;
@@ -88,10 +140,12 @@ public class SketchCode {
       load();
     } catch (IOException e) {
       System.err.println("Error while loading code " + file.getName());
+      // so at this point, the SketchCode class will become invalid?
     }
   }
 
 
+  // TODO: why not make it static?
   protected void makePrettyName() {
     prettyName = file.getName();
     int dot = prettyName.indexOf('.');
@@ -99,26 +153,55 @@ public class SketchCode {
   }
 
 
+  /**
+   * It just returns name of the backing file.
+   * <p>
+   * Which version of the file does this return? Last saved?
+   * </p>
+   * 
+   * @return
+   */
   public File getFile() {
     return file;
   }
 
 
+  /**
+   * Returns whether backing file exists.
+   * 
+   * @return
+   */
   protected boolean fileExists() {
     return file.exists();
   }
 
 
+  /**
+   * Returns if the backing file is read-only.
+   * @return
+   */
   protected boolean fileReadOnly() {
     return !file.canWrite();
   }
 
-
+  /**
+   * Attempts to delete the backing file.
+   * @return true when file was deleted.
+   */
   protected boolean deleteFile() {
     return file.delete();
   }
 
 
+  /**
+   * Attempts to rename backing file, updates pretty name
+   * on success.
+   * 
+   * @param what new name
+   * @param ext ??wtf is this? this is new setting of ext. which is error prone.
+   * 
+   * @return true when rename was successful.
+   */
   protected boolean renameTo(File what, String ext) {
 //    System.out.println("renaming " + file);
 //    System.out.println("      to " + what);
@@ -132,21 +215,46 @@ public class SketchCode {
   }
 
 
+  /**
+   * Attempts to save string buffer 'program' into dest file.
+   * 
+   * <p>
+   * Under the hood uses Base.saveFile()  
+   * which I don't know what properties have.
+   * </p>
+   * 
+   * @param dest
+   * @throws IOException when there's error saving.
+   */
   public void copyTo(File dest) throws IOException {
     Base.saveFile(program, dest);
   }
 
 
+  /**
+   * Returns ONLY name of the backing file (without path).
+   * 
+   * @return
+   */
   public String getFileName() {
     return file.getName();
   }
 
 
+  /**
+   * Getter for {@link #prettyName}.
+   * 
+   * @return
+   */
   public String getPrettyName() {
     return prettyName;
   }
 
 
+  /**
+   * Getter for {@link #extension}.
+   * @return
+   */
   public String getExtension() {
     return extension;
   }
@@ -157,13 +265,20 @@ public class SketchCode {
   }
 
 
-  /** get the current text for this tab */
+  /** 
+   * Gets contents of the {@link #program} buffer.
+   *
+   **/
   public String getProgram() {
     return program;
   }
 
 
-  /** set the current text for this tab */
+  /**
+   * Sets contents of the {@link #program} buffer.
+   * 
+   * @param replacement
+   */
   public void setProgram(String replacement) {
     program = replacement;
   }
@@ -175,16 +290,31 @@ public class SketchCode {
   }
 
 
+  /**
+   * Gets count of lines in the {@link #program} buffer.
+   * 
+   * @return
+   */
   public int getLineCount() {
     return Base.countLines(program);
   }
 
 
+  /**
+   * Setter for the {@link #modified} flag.
+   * 
+   * @param modified
+   */
   public void setModified(boolean modified) {
     this.modified = modified;
   }
 
 
+  /**
+   * Getter for the {@link #modified} flag.
+   * 
+   * @return
+   */
   public boolean isModified() {
     return modified;
   }
@@ -260,6 +390,16 @@ public class SketchCode {
   }
 
 
+  /**
+   * Returns time when the sketch was last visited.
+   * 
+   * <p>
+   * ATMK Is used ONLY by the @link {@link EditorStatus} probably to sort
+   * elements? 
+   *
+   * </p>
+   * @return
+   */
   public long lastVisited() {
     return visited;
   }

@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 
 import processing.app.Base;
 import processing.app.Preferences;
-import processing.app.SketchException;
+import processing.app.elements.sketch.SketchException;
 import processing.core.PApplet;
 import processing.mode.java.preproc.PdeLexer;
 import processing.mode.java.preproc.PdeRecognizer;

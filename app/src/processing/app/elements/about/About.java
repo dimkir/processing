@@ -1,4 +1,4 @@
-package processing.app;
+package processing.app.elements.about;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -12,12 +12,32 @@ import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import processing.app.Base;
+import processing.app.Toolkit;
 
+/**
+ * This class encapsulates drawing of the about window.
+ * 
+ * <p>
+ * Implementation simply draws and image over the window and
+ * after that draws string with version name. 
+ * 
+ * This class handles retina-displays and displays higher resolution image
+ * in that situation.
+ * 
+ * </p>
+ */
 public class About extends Window {
   Image image;
   int width, height;
   
-  
+  /**
+   * Just shows about window.
+   * 
+   * Looks like is called with NULL as frame parameter.
+   * 
+   * @param frame
+   */
   public About(Frame frame) {
     super(frame);
     

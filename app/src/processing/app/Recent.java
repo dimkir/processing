@@ -34,6 +34,14 @@ import processing.core.PApplet;
 //   after sketch save/rename add it to the list
 //   (this is the more straightforward model, otherwise has lots of weird edge cases)
 
+/**
+ * What is this class?
+ *
+ * just offers two public methods:
+ * {@link #getMenu()}
+ * {@link #getToolbarMenu()}
+ * i wonder what's is it's purpose?
+ */
 public class Recent {
   static final String FILENAME = "recent.txt";
   static final String VERSION = "2";

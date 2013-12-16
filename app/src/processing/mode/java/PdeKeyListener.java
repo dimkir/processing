@@ -25,7 +25,7 @@ package processing.mode.java;
 
 import processing.app.Editor;
 import processing.app.Preferences;
-import processing.app.Sketch;
+import processing.app.elements.sketch.Sketch;
 import processing.app.syntax.*;
 
 import java.awt.*;

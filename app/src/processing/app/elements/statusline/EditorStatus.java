@@ -21,64 +21,94 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package processing.app;
+package processing.app.elements.statusline;
 
 import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
 
+import processing.app.Base;
+import processing.app.Editor;
+import processing.app.Mode;
+import processing.app.Preferences;
+import processing.app.Toolkit;
+
+
+//TODO: **** need to decouple this class from static coupling to Preferences
 
 /**
  * Panel just below the editing area that contains status messages.
+ * 
+ * This is basically status line with ability to show yes/no buttons and ask for text input.
+ * 
+ * <p>
+ * What's the mechanics of this status line? 
+ * -it can change bg color.
+ * </p>
  */
 public class EditorStatus extends JPanel {
-  Color[] bgcolor;
-  Color[] fgcolor;
+  private   Color[] bgcolor;
+  private   Color[] fgcolor;
 
-  static final int NOTICE = 0;
-  static final int ERR    = 1;
+  private static final int NOTICE = 0;
+  private static final int ERR    = 1;
   //static final int PROMPT = 2;
   //static final int EDIT   = 3;
-  static final int EDIT   = 2;
+  private static final int EDIT   = 2;
 
-  static final int YES    = 1;
-  static final int NO     = 2;
-  static final int CANCEL = 3;
-  static final int OK     = 4;
+  private static final int YES    = 1;
+  private static final int NO     = 2;
+  private static final int CANCEL = 3;
+  private static final int OK     = 4;
 
-  static final String NO_MESSAGE = "";
+  private static final String NO_MESSAGE = "";
 
-  Editor editor;
+  // TODO: need to decouple this method from this variable.
+  private Editor editor;
 
-  int mode;
-  String message;
+  private int statusLineMode;
+  private String message;
 
-  Font font;
-  FontMetrics metrics;
-  int ascent;
+  private Font font;
+  private FontMetrics metrics;
+  private int ascent;
 
-  Image offscreen;
-  int sizeW, sizeH;
+  private Image offscreen;
+  private int sizeW, sizeH;
 
-  JButton cancelButton;
-  JButton okButton;
-  JTextField editField;
+  private JButton cancelButton;
+  private JButton okButton;
+  private JTextField editField;
 
-  int response;
+  private int response;
 
-  boolean indeterminate;
-  Thread thread;
+  /**
+   * @deprecated is used by unused components.
+   */
+  private boolean mIndeterminate;
+  
+  /**
+   * @deprecated is used by unused components.
+   */
+  private Thread mThread;
 
 
-
+  /**
+   * Initializes components.
+   * 
+   * @param editor ?? as we're tightly coupled to Editor, in the constructor we pass the parameter of the editor.
+   */
   public EditorStatus(Editor editor) {
     this.editor = editor;
     empty();
     updateMode();
   }
 
-
+  /**
+   * As each mode has it's own color, this one
+   * is updating colors of the EditorStatus to teh colors of the mode.
+   */
   public void updateMode() {
     Mode mode = editor.getMode();
     bgcolor = new Color[] {
@@ -97,16 +127,26 @@ public class EditorStatus extends JPanel {
     metrics = null;
   }
 
-
+  /**
+   * Sets status line to NOTICE mode and sets message to NO_MESSAGE.
+   * Also calls {@link #repaint()}
+   */
   public void empty() {
-    mode = NOTICE;
+    statusLineMode = NOTICE;
     message = NO_MESSAGE;
     repaint();
   }
 
 
+  /**
+   * Sets status line into NOTICE mode and sets message to the 
+   * value of message parameter.
+   * Also forces {@link #repaint()} 
+   * 
+   * @param message
+   */
   public void notice(String message) {
-    mode = NOTICE;
+    statusLineMode = NOTICE;
     this.message = message;
     repaint();
   }
@@ -118,14 +158,21 @@ public class EditorStatus extends JPanel {
 
 
   public void error(String message) {
-    mode = ERR;
+    statusLineMode = ERR;
     this.message = message;
     repaint();
   }
 
 
+  /**
+   * Basically shows filename input prompt within the status line.
+   * The completion of the input, is wired to {@link Sketch#nameCode()} or smth like this.
+   * 
+   * @param message
+   * @param dflt
+   */
   public void edit(String message, String dflt) {
-    mode = EDIT;
+    statusLineMode = EDIT;
     this.message = message;
 
     response = 0;
@@ -139,21 +186,35 @@ public class EditorStatus extends JPanel {
     repaint();
   }
 
-
+  
+  /**
+   * Hides all "edit-related" controls and returns focus to editors textarea.
+   * Also resets to "empty" state the control.
+   */
   public void unedit() {
     okButton.setVisible(false);
     cancelButton.setVisible(false);
     editField.setVisible(false);
+    // TODO: need to figure out how to solve this one? See below considerations.
+    // honesly unedit should't really play with the focus
+    // There should be an event, which says "edit-finished" and it may be "successful" or "not",
+    // but the caller will be the one who knows that and will be the one who
+    // will be deciding to which control it should return focus after "edit" is finished.
     editor.textarea.requestFocusInWindow();
     empty();
   }
 
 
+  /**
+   * WTF is this?? How can we be repainting 
+   * from another thread?
+   * @deprecated it looks to be used by unused caller methods.
+   */
   public void startIndeterminate() {
-    indeterminate = true;
-    thread = new Thread() {
+    mIndeterminate = true;
+    mThread = new Thread() {
       public void run() {
-        while (Thread.currentThread() == thread) {
+        while (Thread.currentThread() == mThread) {
           repaint();
           try {
             Thread.sleep(1000 / 10);
@@ -161,18 +222,23 @@ public class EditorStatus extends JPanel {
         }
       }
     };
-    thread.start();
+    mThread.start();
   }
 
 
+  /**
+   * 
+   * @deprecated called by unused caller.
+   */
   public void stopIndeterminate() {
-    indeterminate = false;
-    thread = null;
+    mIndeterminate = false;
+    mThread = null;
     repaint();
   }
 
 
   public void paintComponent(Graphics screen) {
+    // TODO: it's weird that initialization of the parts of the component are made in paintComponent()
     if (okButton == null) setup();
 
     Dimension size = getSize();
@@ -215,14 +281,15 @@ public class EditorStatus extends JPanel {
 
     //setBackground(bgcolor[mode]);  // does nothing
 
-    g.setColor(bgcolor[mode]);
+    g.setColor(bgcolor[statusLineMode]);
     g.fillRect(0, 0, sizeW, sizeH);
 
-    g.setColor(fgcolor[mode]);
+    g.setColor(fgcolor[statusLineMode]);
     g.setFont(font); // needs to be set each time on osx
+    // TODO: need to remove coupling with Preferences
     g.drawString(message, Preferences.GUI_SMALL, (sizeH + ascent) / 2);
 
-    if (indeterminate) {
+    if (mIndeterminate) {
       int x = cancelButton.getX();
       int w = cancelButton.getWidth();
       int y = getHeight() / 3;
@@ -243,6 +310,10 @@ public class EditorStatus extends JPanel {
   }
 
 
+  /**
+   * Creates buttons and JTextField and hooks up listeners.
+   * 
+   */
   protected void setup() {
     if (okButton == null) {
       cancelButton = new JButton(Preferences.PROMPT_CANCEL);
@@ -250,7 +321,7 @@ public class EditorStatus extends JPanel {
 
       cancelButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          if (mode == EDIT) {
+          if (statusLineMode == EDIT) {
             unedit();
             //editor.toolbar.clear();
           }
@@ -260,7 +331,7 @@ public class EditorStatus extends JPanel {
       okButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           // answering to rename/new code question
-          if (mode == EDIT) {  // this if() isn't (shouldn't be?) necessary
+          if (statusLineMode == EDIT) {  // this if() isn't (shouldn't be?) necessary
             String answer = editField.getText();
             editor.getSketch().nameCode(answer);
             unedit();
@@ -373,6 +444,10 @@ public class EditorStatus extends JPanel {
   }
 
 
+  /**
+   * Wtf? 
+   * Why do we need to set button bounds?
+   */
   protected void setButtonBounds() {
     int top = (sizeH - Preferences.BUTTON_HEIGHT) / 2;
     int eachButton = Preferences.GUI_SMALL + Preferences.BUTTON_WIDTH;
@@ -418,13 +493,15 @@ public class EditorStatus extends JPanel {
 
   public void actionPerformed(ActionEvent e) {
     if (e.getSource() == cancelButton) {
-      if (mode == EDIT) unedit();
+      if (statusLineMode == EDIT) unedit();
       //editor.toolbar.clear();
 
     } else if (e.getSource() == okButton) {
       // answering to rename/new code question
-      if (mode == EDIT) {  // this if() isn't (shouldn't be?) necessary
+      if (statusLineMode == EDIT) {  // this if() isn't (shouldn't be?) necessary
         String answer = editField.getText();
+        
+        // OMG, this is a nightmare!!!!!
         editor.getSketch().nameCode(answer);
         unedit();
       }

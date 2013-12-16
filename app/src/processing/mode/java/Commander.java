@@ -29,6 +29,8 @@ import java.io.UnsupportedEncodingException;
 
 import processing.app.*;
 import processing.app.contrib.ModeContribution;
+import processing.app.elements.sketch.Sketch;
+import processing.app.elements.sketch.SketchException;
 import processing.core.PApplet;
 import processing.mode.java.runner.*;
 

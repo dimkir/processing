@@ -25,9 +25,23 @@ import java.io.File;
 import java.io.IOException;
 
 import processing.app.*;
+import processing.app.elements.sketch.Sketch;
+import processing.app.elements.sketch.SketchException;
 import processing.mode.java.runner.Runner;
 
-
+/**
+ * It is our ol'beloved JavaMode, but can 
+ * we elaborate a bit more, on what kind of abstraction 
+ * this class actually represents.
+ * 
+ * We all know what JavaMode is when we use PDE,
+ * but what it encapsulates? What main SuDaS (SupportingDataStructures
+ * are here). 
+ * What are dependencies?
+ * 
+ * How does it relate to other classes?
+ *
+ */
 public class JavaMode extends Mode {
   // classpath for all known libraries for p5
   // (both those in the p5/libs folder and those with lib subfolders
@@ -40,6 +54,14 @@ public class JavaMode extends Mode {
   }
 
 
+  /**
+   * Initializes Java Mode
+   * 
+   * What does it mean?
+   * 
+   * @param base why do we need base?
+   * @param folder what kind of folder is this?
+   */
   public JavaMode(Base base, File folder) {
     super(base, folder);
   }

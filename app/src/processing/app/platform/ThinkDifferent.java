@@ -27,9 +27,9 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
-import processing.app.About;
 import processing.app.Base;
 import processing.app.Toolkit;
+import processing.app.elements.about.About;
 import processing.core.PApplet;
 
 import com.apple.eawt.*;

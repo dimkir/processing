@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.util.BitSet;
 import java.util.Stack;
 import processing.app.Preferences;
-import processing.app.SketchException;
+import processing.app.elements.sketch.SketchException;
 import processing.mode.java.preproc.PdeTokenTypes;
 import antlr.CommonASTWithHiddenTokens;
 import antlr.CommonHiddenStreamToken;

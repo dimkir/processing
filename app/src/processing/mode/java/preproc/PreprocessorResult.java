@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import processing.app.SketchException;
+import processing.app.elements.sketch.SketchException;
 
 /**
  * 
