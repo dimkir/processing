@@ -10,6 +10,8 @@ import javax.swing.border.*;
 
 import processing.app.*;
 import processing.app.Toolkit;
+import processing.app.elements.about.About;
+import processing.app.elements.sketch.SketchException;
 import processing.mode.java.runner.Runner;
 
 

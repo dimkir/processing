@@ -24,7 +24,9 @@ package processing.app;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import java.io.*;
+
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -34,6 +36,9 @@ import javax.swing.*;
 import javax.swing.tree.*;
 
 import processing.app.contrib.*;
+import processing.app.elements.console.EditorConsole;
+import processing.app.elements.sketch.Sketch;
+
 import processing.core.*;
 
 
@@ -1667,7 +1672,13 @@ public class Base {
 
   static private Boolean usableOracleJava;
 
-  // Make sure this is Oracle Java 7u40 or later. This is temporary.
+  /**
+   * Make sure this is Oracle Java 7u40 or later. This is temporary.
+   * 
+   * @deprecated so let's mark it as temporary. And how can it be temporary 
+   *            if dependency on this method is baked into others?
+   * @return
+   */
   static public boolean isUsableOracleJava() {
     if (usableOracleJava == null) {
       usableOracleJava = false;
@@ -2615,7 +2626,20 @@ public class Base {
 
 
   /**
-   * Spew the contents of a String object out to a file.
+   * Spew the contents of a String object out to a file (via tmp-file).
+   * Note that on failure of writing to disk, the dest file will NOT be corrupted
+   * or overwritten.
+   * 
+   * @param str is the stirng to save to file.
+   * @param file is the destination filename.
+   * 
+   * <p>
+   * It does it in a fancy way - via tmp file - meaning that first it creates file
+   * in temporary directory and only on success of that operation 
+   * it renames it to the original file.
+   * </p>
+   * 
+   * @throws IOException stating reason for failure of this saveFile() operation.
    */
   static public void saveFile(String str, File file) throws IOException {
     File temp = File.createTempFile(file.getName(), null, file.getParentFile());

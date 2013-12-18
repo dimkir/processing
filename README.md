@@ -1,3 +1,30 @@
+This is an attempt to refactor PDE to reduce coupling and improve modularity
+==========
+I have always wanted to participate in an open source project, and Processing seemed to be a good match. However once I have started reading PDE code, I realized that it seems to be very monolithic. Almost all classes are coupled with `Base.java` or `Editor.java`.  This basicaly disallows reusability of the components,  but what's worse, that means that it is impossible to test for example `EditorToolbar.java` component without runnign the whole PDE. 
+
+Or for example `Sketch.java` doesn't really follow SRP (Single Responsibility Principle) because it contains states for files, states for 
+
+There're a lot of global states and public member variables which are used across different classes.
+
+Also there's a bunch of 'logical coupling' which is the worst type of coupling, where two classes assume each others functionality.
+
+Also there's bunch of 'baked' in variables.
+
+`Preferences.java` has three responsiblities: showing GUI, representing data in memory and persisting data.
+
+
+There's an ongoing talk on forums and github issue comments about getting more people involved into development of Processing, but taking into account current lack of modularity and high levels of coupling, which result in exponential growth of complexity of the project, the learning curve of 2-3 month to be able to understand the current structure of PDE I believe is a great obstacle. 
+
+Hopefully refactoring may help.
+
+
+Dimitry Kireyenkov
+18 December 2013
+
+
+
+
+
 Processing
 ==========
 

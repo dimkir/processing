@@ -29,6 +29,8 @@ import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import processing.app.elements.sketch.Sketch;
+
 
 /**
  * Find & Replace window for the Processing editor.

@@ -21,7 +21,7 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package processing.app;
+package processing.app.elements.console;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -29,6 +29,11 @@ import java.io.*;
 
 import javax.swing.*;
 import javax.swing.text.*;
+
+import processing.app.Base;
+import processing.app.Editor;
+import processing.app.Mode;
+import processing.app.Preferences;
 import processing.core.PApplet;
 
 import java.text.SimpleDateFormat;
@@ -224,8 +229,14 @@ public class EditorConsole extends JScrollPane {
     setMinimumSize(new Dimension(1024, (height * 4) + sizeFudge));
   }
 
-
+  /**
+   * Fetches console from the editor and
+   * saves it in the static variable {@link #currentConsole}.  
+   * 
+   * @param editor which has .console property.
+   */
   static public void setEditor(Editor editor) {
+    // TODO: this method and state doesn't really look super amazing.
     currentConsole = editor.console;
   }
 

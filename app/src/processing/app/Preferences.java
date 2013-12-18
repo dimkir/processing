@@ -22,14 +22,46 @@
 
 package processing.app;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import javax.swing.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 
-import processing.core.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.swing.Box;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.ListCellRenderer;
+
+import processing.core.PApplet;
+import processing.core.PConstants;
 
 
 /**
@@ -90,16 +122,27 @@ public class Preferences {
   static public int BUTTON_HEIGHT = 24;
   
   /** height of the EditorHeader, EditorToolbar, and EditorStatus */
-  static final int GRID_SIZE = 32;
+  public static final int GRID_SIZE = 32;
   //static final int GRID_SIZE = 33;
 
   // indents and spacing standards. these probably need to be modified
   // per platform as well, since macosx is so huge, windows is smaller,
   // and linux is all over the map
 
+  /**
+   * Spacing for MACOS (?)
+   */
   static final int GUI_BIG     = 13;
+  
+  /**
+   * Spacing for Windows (?)
+   */
   static final int GUI_BETWEEN = 10;
-  static final int GUI_SMALL   = 6;
+  
+  /**
+   * Spacing for Linux (?)
+   */
+  public static final int GUI_SMALL   = 6;
 
   // gui elements
 

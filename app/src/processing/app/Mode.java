@@ -34,13 +34,25 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.*;
 
+import processing.app.elements.sketch.SketchCode;
+import processing.app.elements.sketch.SketchException;
 import processing.app.syntax.*;
 import processing.core.PApplet;
 
-
+/**
+ * What is this monstrous class?
+ * 
+ * Which responsibilities does it have?
+ * It's already too large to follow SRP?
+ *
+ */
 public abstract class Mode {
   protected Base base;
 
+  /**
+   * What folder is this?
+   * Looks like mode folder?
+   */
   protected File folder;
 
   protected PdeKeywords tokenMarker = new PdeKeywords();
@@ -208,6 +220,16 @@ public abstract class Mode {
   }
   
   
+  /**
+   * Draws background image at (x,y) of (0,-offset) coordinate  on the graphics passed.
+   * 
+   * <p>
+   * If image is unavailable, doesn't do anything.
+   * </p>
+   * 
+   * @param g
+   * @param offset
+   */
   public void drawBackground(Graphics g, int offset) {
     if (backgroundImage != null) {
       if (!Toolkit.highResDisplay()) {

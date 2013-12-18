@@ -24,6 +24,7 @@
 package processing.mode.java;
 
 import processing.app.*;
+import processing.app.elements.sketch.SketchException;
 import processing.core.*;
 
 import java.io.*;

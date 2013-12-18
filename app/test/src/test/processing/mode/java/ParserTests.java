@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import processing.app.SketchException;
+import processing.app.elements.sketch.SketchException;
 import processing.app.exec.ProcessResult;
 import antlr.RecognitionException;
 

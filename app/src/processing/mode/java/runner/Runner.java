@@ -23,6 +23,7 @@
 package processing.mode.java.runner;
 
 import processing.app.*;
+import processing.app.elements.sketch.SketchException;
 import processing.app.exec.StreamRedirectThread;
 import processing.core.*;
 import processing.mode.java.JavaBuild;

@@ -72,7 +72,7 @@ public class Toolkit {
   public static final KeyStroke WINDOW_CLOSE_KEYSTROKE =
     KeyStroke.getKeyStroke('W', SHORTCUT_KEY_MASK);
   /** Command-Option on Mac OS X, Ctrl-Alt on Windows and Linux */
-  static final int SHORTCUT_ALT_KEY_MASK = ActionEvent.ALT_MASK |
+  public static final int SHORTCUT_ALT_KEY_MASK = ActionEvent.ALT_MASK |
     awtToolkit.getMenuShortcutKeyMask();
 
 
@@ -228,7 +228,11 @@ public class Toolkit {
 
   static Boolean highResProp;
 
-
+  /**
+   * Returns whether we are using high-res retina display.
+   * 
+   * @return
+   */
   static public boolean highResDisplay() {
     if (highResProp == null) {
       highResProp = checkRetina();
@@ -456,7 +460,15 @@ public class Toolkit {
   }
   
   
-  static double getAscent(Graphics g) { //, Font font) {
+  /**
+   * Attempts to figure out text height by 
+   * attempting to create a sample TextLayout using FontRenderContext and gets it's height. 
+   * 
+   * @param g graphics which would be used as Graphics2D to get FontRenderContext
+   * 
+   * @return
+   */
+  public static double getAscent(Graphics g) { //, Font font) {
     Graphics2D g2 = (Graphics2D) g;
     FontRenderContext frc = g2.getFontRenderContext();
     //return new TextLayout("H", font, frc).getBounds().getHeight();

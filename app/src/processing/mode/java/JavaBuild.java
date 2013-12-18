@@ -27,6 +27,9 @@ import java.util.*;
 import java.util.zip.*;
 
 import processing.app.*;
+import processing.app.elements.sketch.Sketch;
+import processing.app.elements.sketch.SketchCode;
+import processing.app.elements.sketch.SketchException;
 import processing.core.*;
 import processing.mode.java.preproc.*;
 

@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import processing.app.contrib.*;
+import processing.app.elements.sketch.Sketch;
 import processing.core.*;
 
 
